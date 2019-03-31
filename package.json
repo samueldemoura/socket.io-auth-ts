@@ -1,0 +1,26 @@
+{
+  "name": "@hschulz/socketio-auth-typescript",
+  "version": "0.1.0",
+  "description": "Socket.IO Auth",
+  "keywords": [
+    "socket.io",
+    "authentication",
+    "typescript"
+  ],
+  "author": "Hauke Schulz <hauke27@gmail.com>",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "./node_modules/.bin/tsc --build ./tsconfig.json",
+    "build": "./node_modules/.bin/tsc --build ./tsconfig.json"
+  },
+  "dependencies": {
+    "@types/socket.io": "^2.1.2",
+    "socket.io": "^2.2.0",
+    "typescript": "^3.4.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:hschulz/socketio-auth-typescript.git"
+  }
+}
