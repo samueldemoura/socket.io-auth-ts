@@ -1,7 +1,10 @@
 import { Server, Socket } from "socket.io"
 
+/** Callback used after the authentication */
+export type AuthResponseCallback = (error?: Error) => void
+
 /** Method signature used by the authentication process. */
-export type AuthenticationCallback = (socket: AuthenticatedSocket, data: any, callback: (error?: Error, isAuthenticated?: boolean) => void) => void
+export type AuthenticationCallback = (socket: AuthenticatedSocket, data: any, callback: AuthResponseCallback) => void
 
 /** Method signature used by the post authentication process. */
 export type PostAuthenticationCallback = (socket: AuthenticatedSocket, data: any) => void
@@ -73,13 +76,10 @@ export function authenticateSocket(server: Server, config: AuthenticationConfig)
         socket.on('authentication', data => {
 
             /* Pass data to callback function */
-            config.onAuthenticate(socket, data, (error, isAuthenticated) => {
+            config.onAuthenticate(socket, data, (error?) => {
 
                 /* If the callback yields a successfull authentication */
-                if (isAuthenticated) {
-
-                    /* The socket is now authenticated */
-                    socket.isAuthenticated = true
+                if (socket.isAuthenticated) {
 
                     /* Restore previously disabled unauthenticated connections */
                     Object.entries(server.nsps).forEach(restoreItem => {
@@ -98,13 +98,15 @@ export function authenticateSocket(server: Server, config: AuthenticationConfig)
                 } else if (error) {
 
                     /* Signal failed authentication */
-                    socket.emit('unauthorized', { message: error.message }, socket.disconnect())
+                    socket.emit('unauthorized', { message: error.message })
+                    socket.disconnect()
 
                 /* The callback yields an unsuccessfull authentication */
                 } else {
 
                     /* Signal a failure during authentication */
-                    socket.emit('unauthorized', { message: 'Authentication failure' }, socket.disconnect())
+                    socket.emit('unauthorized', { message: 'Authentication failure' })
+                    socket.disconnect()
                 }
             })
         })
