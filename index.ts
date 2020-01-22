@@ -52,7 +52,7 @@ export interface AuthenticationConfig {
 /**
  * Adds connection listeners to the given socket.io server, so clients
  * are forced to authenticate before they can receive events.
- * 
+ *
  * @param server The Socket.IO server that needs authentication
  * @param config The authentication configuration
  */
@@ -73,13 +73,16 @@ export function authenticateSocket(server: Server, config: AuthenticationConfig)
         socket.isAuthenticated = false
 
         /* Handle authentication for connection */
-        socket.on('authentication', data => {
+        socket.on('authenticate', data => {
 
             /* Pass data to callback function */
             config.onAuthenticate(socket, data, (error?) => {
 
                 /* If the callback yields a successfull authentication */
-                if (socket.isAuthenticated) {
+                if (!error) {
+
+                    /* Set socket to authenticated */
+                    socket.isAuthenticated = true;
 
                     /* Restore previously disabled unauthenticated connections */
                     Object.entries(server.nsps).forEach(restoreItem => {
@@ -95,17 +98,9 @@ export function authenticateSocket(server: Server, config: AuthenticationConfig)
                     }
 
                 /* The callback yields an error during authentication */
-                } else if (error) {
-
+                } else {
                     /* Signal failed authentication */
                     socket.emit('unauthorized', { message: error.message })
-                    socket.disconnect()
-
-                /* The callback yields an unsuccessfull authentication */
-                } else {
-
-                    /* Signal a failure during authentication */
-                    socket.emit('unauthorized', { message: 'Authentication failure' })
                     socket.disconnect()
                 }
             })
@@ -140,7 +135,7 @@ export function authenticateSocket(server: Server, config: AuthenticationConfig)
  * sockets will be removed from the connection list.
  * The suspended connections will be restored later when
  * they have been authenticated.
- * 
+ *
  * @param namespace The Socket.IO namespace that will be disconnected
  * @returns void
  */
@@ -160,7 +155,7 @@ function suspendConnection(namespace: SocketIO.Namespace): void {
 
 /**
  * Restore previously suspended socket connections to a namespace.
- * 
+ *
  * @param namespace The namespace that will be reconnected
  * @param socket The socket the namespace will be connected to
  * @returns void
