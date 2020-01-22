@@ -1,90 +1,63 @@
-# socketio-auth-typescript
+# socket.io-auth-ts
+This package provides a simple authentication middleware for [socket.io](https://socket.io/).
 
-This package provides authentication for [Socket.IO](https://socket.io/)
-
-## Installing
-
-The install ist pretty forward. Just install the npm package and you're finished.
-
+## Installation
 ```
-npm -i @hschulz/socketio-auth-typescript
+npm install socket.io-auth-ts
 ```
 
 ## Usage
-
-### Server
+### In the server:
 ```typescript
-import { authenticateSocket } from "@hschulz/socketio-auth-typescript"
+import { authenticateSocket } from 'socket.io-auth-ts'
 
 const server = createServer().listen(56789)
 const sio: socketio.Server = socketio.listen(server)
 
-const onAuthenticate = (socket: SocketIO.Socket, data: any, callback: (err?: Error, success?: boolean) => void) => {
+const onAuthenticate = (
+  socket: SocketIO.Socket, data: any, cb: (err?: Error) => void
+) => {
+  if (!data)
+    return cb(new Error('No authentication data.'));
 
-    /* Data will be whatever the client sent */
-    if (!data) {
-        return callback(new Error('Authentication error - No Data'))
-    }
-
-    /* However you validate the client data */
-    if (data === 'isSomehowValid') {
-        return callback(void, true)
-    }
-
-    /* No authentication */
-    return callback(void, false)
+  if (data === 'isSomehowValid') {
+    // Call the callback without an error to indicate
+    // authentication success.
+    return cb();
+  } else {
+    // Call with an error to indicate authentication
+    // failure and send the error message to the client.
+    return cb(new Error('Invalid authentication data.'))
+  }
 };
 
 authenticateSocket(sio, {
-    onAuthenticate
+  onAuthenticate
 })
 ```
 
-### Client
-
+### In the client:
 ```javascript
 var io = require('socket.io-client');
 
 var socket = io.connect('http://localhost:56789');
 
-socket.on("connect", () => {
+socket.on('connect', () => {
+  socket.emit('authenticate', 'isSomehowValid');
 
-    socket.emit("authentication", "isSomehowValid");
+  socket.on('authenticated', () => {
+    // The socket is now authenticated.
+  });
 
-    socket.on("authenticated", () => {
-        // The socket is now authenticated
-    });
-
-    socket.on("unauthorized", (message) => {
-        // There was an error during the authentication
-    });
+  socket.on('unauthorized', (message) => {
+    // There was an error during the authentication.
+  });
 });
 ```
 
-## Built With
-
-* [TypeScript](https://www.typescriptlang.org/)
-* [Socket.IO](https://socket.io/)
-* [Definitly Typed](https://github.com/DefinitelyTyped/DefinitelyTyped)
-
-## Contributing
-
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/hschulz/socketio-auth-typescript/tags). 
-
-## Authors
-
-* **Hauke Schulz** - *Developer* - [hschulz](https://github.com/hschulz)
-
-See also the list of [contributors](https://github.com/hschulz/socketio-auth-typescript/contributors) who participated in this project.
-
 ## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
 
 ## Acknowledgments
-
-https://github.com/facundoolano/socketio-auth also did this in CommonJS some time ago
+* This is a fork of hschulz's `socketio-auth-typescript` package. Motivation being that the documentation on his repository was out of date and using the callback as he described did not work correctly.
+* User facundoolano also did this in CommonJS some time ago: https://github.com/facundoolano/socketio-auth
