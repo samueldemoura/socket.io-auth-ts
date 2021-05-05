@@ -1,6 +1,6 @@
 {
   "name": "socket.io-auth-ts",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "socket.io authentication middleware",
   "keywords": [
     "socket.io",
@@ -13,14 +13,16 @@
   },
   "license": "MIT",
   "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
-    "postinstall": "npx tsc --build ./tsconfig.json",
-    "build": "npx tsc --build ./tsconfig.json"
+    "build": "tsc",
+    "prepublish": "tsc"
   },
   "dependencies": {
-    "@types/socket.io": "^2.1.2",
-    "socket.io": "^2.2.0",
-    "typescript": "^3.4.1"
+    "socket.io": "^4.0.0"
+  },
+  "devDependencies": {
+    "typescript": "*"
   },
   "repository": {
     "type": "git",

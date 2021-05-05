@@ -1,4 +1,4 @@
-import { Server, Socket } from "socket.io"
+import { Namespace, Server, Socket } from "socket.io"
 
 /** Callback used after the authentication */
 export type AuthResponseCallback = (error?: Error) => void
@@ -20,7 +20,7 @@ export interface AuthenticatedSocket extends Socket {
     /**
      * Additional field to signal if the authentication was successful
      */
-    isAuthenticated: boolean
+    isAuthenticated?: boolean
 }
 
 /**
@@ -62,7 +62,7 @@ export function authenticateSocket(server: Server, config: AuthenticationConfig)
     const timeout: number = config.timeout || 1000
 
     /* Disable connections for all namespaces */
-    Object.entries(server.nsps).forEach(suspendItem => {
+    Object.entries(server._nsps).forEach(suspendItem => {
         suspendConnection(suspendItem[1])
     })
 
@@ -85,7 +85,7 @@ export function authenticateSocket(server: Server, config: AuthenticationConfig)
                     socket.isAuthenticated = true;
 
                     /* Restore previously disabled unauthenticated connections */
-                    Object.entries(server.nsps).forEach(restoreItem => {
+                    Object.entries(server._nsps).forEach(restoreItem => {
                         restoreConnection(restoreItem[1], socket)
                     })
 
@@ -139,7 +139,7 @@ export function authenticateSocket(server: Server, config: AuthenticationConfig)
  * @param namespace The Socket.IO namespace that will be disconnected
  * @returns void
  */
-function suspendConnection(namespace: SocketIO.Namespace): void {
+function suspendConnection(namespace: Namespace): void {
 
     /* If a connection is made */
     namespace.on('connect', (socket: AuthenticatedSocket) => {
@@ -148,7 +148,7 @@ function suspendConnection(namespace: SocketIO.Namespace): void {
         if (!socket.isAuthenticated) {
 
             /* Remove the socket from the connected socket list */
-            delete namespace.connected[socket.id]
+            namespace.sockets.delete(socket.id);
         }
     })
 }
@@ -160,12 +160,12 @@ function suspendConnection(namespace: SocketIO.Namespace): void {
  * @param socket The socket the namespace will be connected to
  * @returns void
  */
-function restoreConnection(namespace: SocketIO.Namespace, socket: AuthenticatedSocket): void {
+function restoreConnection(namespace: Namespace, socket: AuthenticatedSocket): void {
 
     /* The socket is known */
     if (socket.id in namespace.sockets) {
 
         /* Re-Add the socket to the connected socket list */
-        namespace.connected[socket.id] = socket
+        namespace.sockets.set(socket.id, socket);
     }
 }

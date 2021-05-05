@@ -1,10 +1,18 @@
 # socket.io-auth-ts
 This package provides a simple authentication middleware for [socket.io](https://socket.io/).
 
+## Deprecation Notice
+This was made before the release of socket.io v3. If you are using version 3 or later, I strongly urge you to consider using the new [middleware and auth support](https://socket.io/docs/v3/middlewares/#Sending-credentials) instead, as this repository is not maintained anymore.
+
 ## Installation
 ```
 npm install socket.io-auth-ts
 ```
+
+## Security Warning
+As of version 2.0.0, **all messages are sent to unauthenticated sockets without restriction!** The server **MUST** check the `isAuthenticated` field on the socket before emitting anything to determine whether the client is allowed to receive a particular piece of data.
+
+This is due to a change that happened in socket.io's internal API when migrating to the latest 4.0.0 release.
 
 ## Usage
 ### In the server:
@@ -54,6 +62,14 @@ socket.on('connect', () => {
   });
 });
 ```
+
+## Changelog
+
+### v2.0.0
+- Add support for socket.io v4.0.0, drop support for older versions due to breaking changes.
+
+### v1.0.0
+- Initial release after forking from hschulz's original repository.
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
