@@ -1,6 +1,9 @@
 # socket.io-auth-ts
 This package provides a simple authentication middleware for [socket.io](https://socket.io/).
 
+## Deprecation Notice
+This was made before the release of socket.io v3. If you are using version 3 or later, I strongly urge you to consider using the new [middleware and auth support](https://socket.io/docs/v3/middlewares/#Sending-credentials) instead, as this repository is not maintained anymore.
+
 ## Installation
 ```
 npm install socket.io-auth-ts
